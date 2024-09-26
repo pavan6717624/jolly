@@ -80,6 +80,12 @@ public class ServiceClass {
 			User user=userRepository.findByMobile(userDetails.getUsername()).get();
 			
 			loginStatus.setUserId(userDetails.getUsername());
+			
+			loginStatus.setName(user.getName());
+			
+			loginStatus.setEmail(user.getEmail());
+			
+			loginStatus.setMobile(user.getMobile());
 		
 			loginStatus.setLoginStatus(true);
 

@@ -13,5 +13,7 @@ public class LoginStatusDTO {
 
 	String message = "";
 	
+	String name,email,mobile;
+	
 
 }
