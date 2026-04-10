@@ -18,7 +18,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "user")
-public class User implements Serializable {
+public class JollyUser implements Serializable {
 
 	private static final long serialVersionUID = 3956721357336114735L;
 	@Id
@@ -37,7 +37,7 @@ public class User implements Serializable {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "roleId")
-	Role role;
+	JollyRole role;
 
 	Boolean isDisabled;
 	Boolean isDeleted;

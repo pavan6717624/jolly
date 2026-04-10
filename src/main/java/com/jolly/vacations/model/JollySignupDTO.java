@@ -4,7 +4,7 @@ import lombok.Data;
 
 
 @Data
-public class SignupDTO{
+public class JollySignupDTO{
 
 	String name, email, mobile, password;
 }

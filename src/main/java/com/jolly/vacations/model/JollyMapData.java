@@ -5,12 +5,12 @@ import java.time.format.DateTimeFormatter;
 import lombok.Data;
 
 @Data
-public class MapData {
+public class JollyMapData {
 
 	Double oi, choi, price, strike;
 	String date, symbol, type;
 
-	public MapData(Fno value, Double close) {
+	public JollyMapData(JollyFno value, Double close) {
 //		value.getSymbol() + "," + value.getTimestamp() + "," + value.getOption_typ() + ","
 //		+ BigDecimal.valueOf(value.getOpen_int()).toPlainString() + ","
 //		+ BigDecimal.valueOf(value.getChg_in_oi()).toPlainString() + ","

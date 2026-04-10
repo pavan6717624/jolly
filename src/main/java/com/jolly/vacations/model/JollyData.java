@@ -3,15 +3,15 @@ package com.jolly.vacations.model;
 import java.util.List;
 
 @lombok.Data
-public class Data {
+public class JollyData {
 
 	String name;
-	OIData data;
+	JollyOIData data;
 	Double sortValue, coi, poi, price;
 
-	public Data(List<MapData> mapData) {
+	public JollyData(List<JollyMapData> mapData) {
 		name = mapData.get(0).getSymbol();
-		data = new OIData(mapData);
+		data = new JollyOIData(mapData);
 	}
 
 	public Double sort() {

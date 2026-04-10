@@ -7,8 +7,10 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -17,16 +19,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.jolly.vacations.domain.User;
+import com.jolly.vacations.domain.JollyUser;
 import com.jolly.vacations.jwt.JwtTokenUtil;
-import com.jolly.vacations.model.LoginDTO;
-import com.jolly.vacations.model.LoginStatusDTO;
-import com.jolly.vacations.model.SignupDTO;
-import com.jolly.vacations.repository.RoleRepository;
-import com.jolly.vacations.repository.UserRepository;
+import com.jolly.vacations.model.JollyLoginDTO;
+import com.jolly.vacations.model.JollyLoginStatusDTO;
+import com.jolly.vacations.model.JollySignupDTO;
+import com.jolly.vacations.repository.JollyRoleRepository;
+import com.jolly.vacations.repository.JollyUserRepository;
 
 @Service
-public class ServiceClass {
+public class JollyServiceClass {
 
 	@Autowired
 	private JavaMailSender javaMailSender;
@@ -35,7 +37,7 @@ public class ServiceClass {
 	private JwtTokenUtil jwtTokenUtil;
 
 	@Autowired
-	UserRepository userRepository;
+	JollyUserRepository userRepository;
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
@@ -44,12 +46,15 @@ public class ServiceClass {
 	private JwtUserDetailsService userDetailsService;
 
 	@Autowired
-	RoleRepository roleRepository;
+	JollyRoleRepository roleRepository;
+	
+	@Value("${email.password}")
+	private String password;
 
 	public Boolean sendOTP(String mobile) throws Exception {
 		try {
 
-			User user = userRepository.findByMobile(mobile).get();
+			JollyUser user = userRepository.findByMobile(mobile).get();
 
 			String password = generateOTP(4);
 
@@ -62,9 +67,9 @@ public class ServiceClass {
 
 	}
 	
-	public LoginStatusDTO getLoginDetails() throws Exception {
+	public JollyLoginStatusDTO getLoginDetails() throws Exception {
 
-		LoginStatusDTO loginStatus = new LoginStatusDTO();
+		JollyLoginStatusDTO loginStatus = new JollyLoginStatusDTO();
 
 		if (SecurityContextHolder.getContext().getAuthentication() == null) {
 			loginStatus.setUserId("");
@@ -77,7 +82,7 @@ public class ServiceClass {
 			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
 					.getPrincipal();
 
-			User user=userRepository.findByMobile(userDetails.getUsername()).get();
+			JollyUser user=userRepository.findByMobile(userDetails.getUsername()).get();
 			
 			loginStatus.setUserId(userDetails.getUsername());
 			
@@ -98,18 +103,18 @@ public class ServiceClass {
 		return loginStatus;
 	}
 
-	public LoginStatusDTO verifyOTP(String mail, String password, String mobile) throws Exception {
+	public JollyLoginStatusDTO verifyOTP(String mail, String password, String mobile) throws Exception {
 
 		try {
 
-			User user = userRepository.findByEmailOrMobile(mail, mobile).get();
+			JollyUser user = userRepository.findByEmailOrMobile(mail, mobile).get();
 			Boolean status = user.getPassword().equals(password);
 
 			if (user.getIsDisabled()) {
 				user.setIsDisabled(!status);
 				userRepository.save(user);
 			}
-			LoginDTO loginDTO = new LoginDTO();
+			JollyLoginDTO loginDTO = new JollyLoginDTO();
 			loginDTO.setMobile(user.getMobile() + "");
 			loginDTO.setPassword(password);
 
@@ -118,7 +123,7 @@ public class ServiceClass {
 		} catch (Exception ex) {
 
 			System.out.println(ex);
-			LoginStatusDTO loginStatus = new LoginStatusDTO();
+			JollyLoginStatusDTO loginStatus = new JollyLoginStatusDTO();
 			loginStatus.setLoginStatus(false);
 			loginStatus.setMessage("Invalid Credientails..");
 
@@ -132,7 +137,10 @@ public class ServiceClass {
 		msg.setSubject(subject);
 		msg.setText(text);
 		try {
+			 JavaMailSenderImpl jMailSender = (JavaMailSenderImpl)javaMailSender;
 
+		     jMailSender.setUsername("heidigiotp@gmail.com");
+		     jMailSender.setPassword(password);
 			javaMailSender.send(msg);
 		} catch (Exception ex) {
 			try {
@@ -146,13 +154,13 @@ public class ServiceClass {
 		return true;
 	}
 
-	public LoginStatusDTO login(LoginDTO login) {
-		LoginStatusDTO loginStatus = new LoginStatusDTO();
+	public JollyLoginStatusDTO login(JollyLoginDTO login) {
+		JollyLoginStatusDTO loginStatus = new JollyLoginStatusDTO();
 		String username = login.getMobile();
 		String password = login.getPassword();
 		try {
 
-			Optional<User> userOpt = userRepository.findByMobile(username);
+			Optional<JollyUser> userOpt = userRepository.findByMobile(username);
 
 			if (userOpt.isPresent()) {
 
@@ -212,19 +220,19 @@ public class ServiceClass {
 		return new String(password);
 	}
 
-	public LoginStatusDTO signup(SignupDTO signup) throws Exception {
+	public JollyLoginStatusDTO signup(JollySignupDTO signup) throws Exception {
 
-		LoginStatusDTO loginStatus = new LoginStatusDTO();
+		JollyLoginStatusDTO loginStatus = new JollyLoginStatusDTO();
 
-		Optional<User> userOpt = userRepository.findByMobile(signup.getMobile());
+		Optional<JollyUser> userOpt = userRepository.findByMobile(signup.getMobile());
 
-		Optional<User> userOpt1 = userRepository.findByEmail(signup.getEmail());
+		Optional<JollyUser> userOpt1 = userRepository.findByEmail(signup.getEmail());
 
 		System.out.println("in singup");
 
 		if (!userOpt.isPresent() && !userOpt1.isPresent()) {
 			System.out.println("in singup2");
-			User user = new User();
+			JollyUser user = new JollyUser();
 			user.setEmail(signup.getEmail());
 			user.setMobile(signup.getMobile());
 			user.setName(signup.getName());

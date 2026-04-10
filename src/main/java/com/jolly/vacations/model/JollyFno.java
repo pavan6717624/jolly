@@ -8,13 +8,13 @@ import java.util.Locale;
 import lombok.Data;
 
 @Data
-public class Fno {
+public class JollyFno {
 
 	String instrument, symbol, option_typ;
 	Double strike_pr, open, high, low, close, settle_pr, contracts, val_inlakh, open_int, chg_in_oi;
 	LocalDate expiry_dt, expiry_dt_final, timestamp;
 
-	public Fno(String line) {
+	public JollyFno(String line) {
 
 		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
 				// case insensitive to parse JAN and FEB

@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 import lombok.Data;
 
 @Data
-public class NewData {
+public class JollyNewData {
 
 	LocalDate date;
 	String iname;
@@ -17,7 +17,7 @@ public class NewData {
 	String lots;
 	Double open, high, low, close, pclose, sprice, trades, oi, value, pvalue, volume;
 
-	public NewData(String data) {
+	public JollyNewData(String data) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMM-yy");
 
 		String dat[] = data.split(",");

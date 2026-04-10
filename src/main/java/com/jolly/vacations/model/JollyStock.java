@@ -8,7 +8,7 @@ import java.util.Locale;
 import lombok.Data;
 
 @Data
-public class Stock {
+public class JollyStock {
 
 	// SYMBOL,SERIES,OPEN,HIGH,LOW,CLOSE,LAST,PREVCLOSE,TOTTRDQTY,TOTTRDVAL,TIMESTAMP,TOTALTRADES,ISIN
 
@@ -18,7 +18,7 @@ public class Stock {
 
 //	SYMBOL,SERIES,OPEN,HIGH,LOW,CLOSE,LAST,PREVCLOSE,TOTTRDQTY,TOTTRDVAL,TIMESTAMP,TOTALTRADES,ISIN
 
-	public Stock(String line) {
+	public JollyStock(String line) {
 		//System.out.println(line);
 		DateTimeFormatter formatter = new DateTimeFormatterBuilder()
 				// case insensitive to parse JAN and FEB

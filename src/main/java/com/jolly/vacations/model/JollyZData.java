@@ -3,13 +3,13 @@ package com.jolly.vacations.model;
 import lombok.Data;
 
 @Data
-public class ZData {
-	public ZData()
+public class JollyZData {
+	public JollyZData()
 	{
 		
 	}
 
-	public ZData(String date, Double open, Double high, Double low, Double close, Double volume, Double oi) {
+	public JollyZData(String date, Double open, Double high, Double low, Double close, Double volume, Double oi) {
 		this.date = date;
 		this.open = open;
 		this.high = high;

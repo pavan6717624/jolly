@@ -8,21 +8,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jolly.vacations.domain.User;
-import com.jolly.vacations.model.LoginDTO;
-import com.jolly.vacations.model.LoginStatusDTO;
-import com.jolly.vacations.model.SignupDTO;
-import com.jolly.vacations.service.ServiceClass;
+import com.jolly.vacations.domain.JollyUser;
+import com.jolly.vacations.model.JollyLoginDTO;
+import com.jolly.vacations.model.JollyLoginStatusDTO;
+import com.jolly.vacations.model.JollySignupDTO;
+import com.jolly.vacations.service.JollyServiceClass;
 
 @RestController
 @CrossOrigin(origins = "*")
-public class Controller {
+public class JollyController {
 	
 	@Autowired
-	ServiceClass service;
+	JollyServiceClass service;
 
 	@RequestMapping(value = "login")
-	public LoginStatusDTO login(@RequestBody LoginDTO login) {
+	public JollyLoginStatusDTO login(@RequestBody JollyLoginDTO login) {
 
 		return service.login(login);
 
@@ -36,19 +36,19 @@ public class Controller {
 	}
 	
 	@RequestMapping(value = "verifyOTP")
-	public LoginStatusDTO verifyOTP(String mail, String mobile, String password) throws Exception {
+	public JollyLoginStatusDTO verifyOTP(String mail, String mobile, String password) throws Exception {
 
 		return service.verifyOTP(mail, password, mobile);
 
 	}
 	
 	@RequestMapping(value = "signup")
-	public LoginStatusDTO signup(@RequestBody SignupDTO signup) throws Exception {
+	public JollyLoginStatusDTO signup(@RequestBody JollySignupDTO signup) throws Exception {
 		return service.signup(signup);
 	}
 	
 	@RequestMapping(value = "/getLoginDetails")
-	public LoginStatusDTO getLoginDetails() throws Exception {
+	public JollyLoginStatusDTO getLoginDetails() throws Exception {
 		return service.getLoginDetails();
 		
 	}

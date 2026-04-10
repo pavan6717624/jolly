@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ZOIData {
+public class JollyZOIData {
 
 	Long price;
 	Long instrument;

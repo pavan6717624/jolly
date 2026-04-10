@@ -7,18 +7,18 @@ import java.util.stream.Collectors;
 import lombok.Data;
 
 @Data
-public class OIData {
+public class JollyOIData {
 	
 	List<Double> putoi, calloi, price, putchoi,callchoi;
 	List<String> date;
-	public OIData()
+	public JollyOIData()
 	{
 		
 	}
 	
-	public OIData(List<MapData> mdata)
+	public JollyOIData(List<JollyMapData> mdata)
 	{
-		mdata=mdata.stream().sorted(Comparator.comparing(MapData::getDate)).collect(Collectors.toList());
+		mdata=mdata.stream().sorted(Comparator.comparing(JollyMapData::getDate)).collect(Collectors.toList());
 		calloi = mdata.stream().filter(o->o.getType().equals("CE")).map(o->o.getStrike()).collect(Collectors.toList());
 		callchoi = mdata.stream().filter(o->o.getType().equals("CE")).map(o->o.getChoi()).collect(Collectors.toList());
 		putoi = mdata.stream().filter(o->o.getType().equals("PE")).map(o->o.getStrike()).collect(Collectors.toList());

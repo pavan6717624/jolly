@@ -15,13 +15,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.jolly.vacations.repository.UserRepository;
+import com.jolly.vacations.repository.JollyUserRepository;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
 	@Autowired
-	UserRepository userDetailsRepository;
+	JollyUserRepository userDetailsRepository;
 
 	@Override
 	@Transactional
@@ -29,7 +29,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 
 		// System.out.println("entered in loadUserByUsername..." + username);
 
-		Optional<com.jolly.vacations.domain.User> user = userDetailsRepository.findByMobile(username);
+		Optional<com.jolly.vacations.domain.JollyUser> user = userDetailsRepository.findByMobile(username);
 
 		List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
 

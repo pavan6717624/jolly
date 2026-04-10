@@ -13,7 +13,7 @@ import lombok.Data;
 @Entity
 @Data
 @Table(name = "roles")
-public class Role implements Serializable {
+public class JollyRole implements Serializable {
 
 	/**
 	 * 

@@ -5,7 +5,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SendData {
+public class JollySendData {
 
 	String symbol;
 	List<Double> coi;

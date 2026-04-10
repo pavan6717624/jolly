@@ -27,11 +27,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import com.jolly.vacations.model.Data;
-import com.jolly.vacations.model.Fno;
-import com.jolly.vacations.model.Futures;
-import com.jolly.vacations.model.MapData;
-import com.jolly.vacations.model.Stock;
+import com.jolly.vacations.model.JollyData;
+import com.jolly.vacations.model.JollyFno;
+import com.jolly.vacations.model.JollyFutures;
+import com.jolly.vacations.model.JollyMapData;
+import com.jolly.vacations.model.JollyStock;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -51,14 +51,14 @@ public class MyTradingSetupController {
 
 	}
 
-	List<Fno> futures = new ArrayList<>();
-	List<Stock> Delivery = new ArrayList<>();
+	List<JollyFno> futures = new ArrayList<>();
+	List<JollyStock> Delivery = new ArrayList<>();
 	
 	@RequestMapping(value = "getLastPrice")
-	public List<Data> getLastPrice() throws Exception {
+	public List<JollyData> getLastPrice() throws Exception {
 		
-		List<Fno> futures = new ArrayList<>();
-		List<MapData> chartData = new ArrayList<>();
+		List<JollyFno> futures = new ArrayList<>();
+		List<JollyMapData> chartData = new ArrayList<>();
 		URL url = new URL("https://www.samco.in/");
 		URLConnection con = url.openConnection();
 
@@ -140,12 +140,12 @@ public class MyTradingSetupController {
 			con.setRequestProperty("Pragma", "no-cache");
 			BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()));
 			String line = "";
-			List<Stock> stocks = new ArrayList<>();
-			List<Fno> fnos = new ArrayList<>();
+			List<JollyStock> stocks = new ArrayList<>();
+			List<JollyFno> fnos = new ArrayList<>();
 			
 			while ((line = br.readLine()) != null)
 				if (line.indexOf(",EQ,") != -1)
-					stocks.add(new Stock(line));
+					stocks.add(new JollyStock(line));
 
 			url = new URL(urls[1].trim());
 
@@ -178,7 +178,7 @@ public class MyTradingSetupController {
 //					System.out.println(line+" "+LocalDate.parse(cols[cols.length - 1].trim(), formatter) +" "+
 //							LocalDate.parse(cols[2].trim(), formatter) +" "+ChronoUnit.DAYS.between(LocalDate.parse(cols[cols.length - 1].trim(), formatter),
 //									LocalDate.parse(cols[2].trim(), formatter)));
-					fnos.add(new Fno(line));
+					fnos.add(new JollyFno(line));
 				}
 				
 				if (cols[0].equals("FUTSTK")
@@ -188,13 +188,13 @@ public class MyTradingSetupController {
 //					System.out.println(line+" "+LocalDate.parse(cols[cols.length - 1].trim(), formatter) +" "+
 //							LocalDate.parse(cols[2].trim(), formatter) +" "+ChronoUnit.DAYS.between(LocalDate.parse(cols[cols.length - 1].trim(), formatter),
 //									LocalDate.parse(cols[2].trim(), formatter)));
-					futures.add(new Fno(line));
+					futures.add(new JollyFno(line));
 				}
 			}
 
 			this.futures=futures;
 			
-			Map<String, List<Fno>> gdata = fnos.stream()
+			Map<String, List<JollyFno>> gdata = fnos.stream()
 					.collect(Collectors.groupingBy(o -> o.getSymbol() + "-" + o.getOption_typ()));
 
 			List<String> keys = gdata.keySet().stream().sorted().collect(Collectors.toList());
@@ -202,9 +202,9 @@ public class MyTradingSetupController {
 		
 
 			for (int i = 0; i < keys.size(); i++) {
-				MapData value = gdata.get(keys.get(i)).stream()
-						.sorted(Comparator.comparingDouble(Fno::getOpen_int).reversed()).limit(1)
-						.map(o -> new MapData(o,
+				JollyMapData value = gdata.get(keys.get(i)).stream()
+						.sorted(Comparator.comparingDouble(JollyFno::getOpen_int).reversed()).limit(1)
+						.map(o -> new JollyMapData(o,
 								stocks.stream().filter(o1 -> o1.getSymbol().equals(o.getSymbol()))
 										.collect(Collectors.toList()).get(0).getClose()))
 						
@@ -216,21 +216,21 @@ public class MyTradingSetupController {
 			localDate = localDate.minusDays(1);
 		}
 		
-		Map<String, List<MapData>> mdata=chartData.stream().collect(Collectors.groupingBy(o -> o.getSymbol()));
+		Map<String, List<JollyMapData>> mdata=chartData.stream().collect(Collectors.groupingBy(o -> o.getSymbol()));
 		
 		List<String> mkeys=mdata.keySet().stream().collect(Collectors.toList());
 		
-		List<Data> sdata=new ArrayList<>();
+		List<JollyData> sdata=new ArrayList<>();
 		
 		for(int i=0;i<mkeys.size();i++)
 		{
-			Data data=new Data(mdata.get(mkeys.get(i)));
+			JollyData data=new JollyData(mdata.get(mkeys.get(i)));
 			sdata.add(data);
 		}
 
 		
 
-		return sdata.stream().sorted(Comparator.comparing(Data::sort).reversed()).collect(Collectors.toList());
+		return sdata.stream().sorted(Comparator.comparing(JollyData::sort).reversed()).collect(Collectors.toList());
 	}
 	
 	public LocalDate getExpiryDate(LocalDate date)
@@ -244,11 +244,11 @@ public class MyTradingSetupController {
 	}
 	
 	@RequestMapping(value = "getFutureOIs")
-	public Collection<List<Futures>> getFutureOIs() throws Exception {
+	public Collection<List<JollyFutures>> getFutureOIs() throws Exception {
 		
 		
 	
-		return (futures.stream().sorted(Comparator.comparing(Fno::getTimestamp)).map(o->new Futures(o)).collect(Collectors.groupingBy(o -> o.getSymbol()))).values();
+		return (futures.stream().sorted(Comparator.comparing(JollyFno::getTimestamp)).map(o->new JollyFutures(o)).collect(Collectors.groupingBy(o -> o.getSymbol()))).values();
 		
 	}
 	

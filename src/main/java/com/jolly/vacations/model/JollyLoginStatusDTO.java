@@ -3,7 +3,7 @@ package com.jolly.vacations.model;
 import lombok.Data;
 
 @Data
-public class LoginStatusDTO {
+public class JollyLoginStatusDTO {
 
 	String userId = "0";
 	String userType = "NONE";

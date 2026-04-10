@@ -5,8 +5,8 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class ZerodhaData {
+public class JollyZerodhaData {
 	
-	List<ZData> data;
+	List<JollyZData> data;
 
 }
