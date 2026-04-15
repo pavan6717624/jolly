@@ -3,8 +3,13 @@ package com.jolly.vacations.service;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,12 +24,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.jolly.vacations.domain.JollyLocation;
+import com.jolly.vacations.domain.JollySchedule;
+import com.jolly.vacations.domain.JollyTrip;
 import com.jolly.vacations.domain.JollyUser;
 import com.jolly.vacations.jwt.JwtTokenUtil;
+import com.jolly.vacations.model.DropDown;
+import com.jolly.vacations.model.JollyCalendarDTO;
+import com.jolly.vacations.model.JollyCustomerDTO;
+import com.jolly.vacations.model.JollyLocationDTO;
 import com.jolly.vacations.model.JollyLoginDTO;
 import com.jolly.vacations.model.JollyLoginStatusDTO;
+import com.jolly.vacations.model.JollyScheduleDTO;
 import com.jolly.vacations.model.JollySignupDTO;
+import com.jolly.vacations.model.JollyTripDTO;
+import com.jolly.vacations.repository.JollyCustomerRepository;
+import com.jolly.vacations.repository.JollyLocationRepository;
 import com.jolly.vacations.repository.JollyRoleRepository;
+import com.jolly.vacations.repository.JollyScheduleRepository;
+import com.jolly.vacations.repository.JollyTripRepository;
 import com.jolly.vacations.repository.JollyUserRepository;
 
 @Service
@@ -47,7 +65,19 @@ public class JollyServiceClass {
 
 	@Autowired
 	JollyRoleRepository roleRepository;
-	
+
+	@Autowired
+	JollyLocationRepository locationRepository;
+
+	@Autowired
+	JollyTripRepository tripRepository;
+
+	@Autowired
+	JollyCustomerRepository customerRepository;
+
+	@Autowired
+	JollyScheduleRepository scheduleRepository;
+
 	@Value("${email.password}")
 	private String password;
 
@@ -66,7 +96,318 @@ public class JollyServiceClass {
 		}
 
 	}
-	
+
+	public JollyTripDTO addTrip(JollyTripDTO tripDTO) throws Exception {
+
+		List<JollyTrip> trip = tripRepository.findByTrip(tripDTO.getFromDate(), tripDTO.getToDate());
+		JollyTripDTO status = new JollyTripDTO();
+		if (trip.size() != 0) {
+
+			if (!trip.get(0).getDisabled()) {
+				status.setStatus(false);
+				status.setMessage("Trip already exists..");
+			} else {
+				Long tripId = trip.get(0).getTripId();
+				JollyTrip jtrip = new JollyTrip();
+				jtrip.setLocation(locationRepository
+						.findByLocationNameIgnoreCaseOrderByLocationIdDesc(tripDTO.getLocationName()).get());
+				jtrip.setFromDate(tripDTO.getFromDate());
+				jtrip.setToDate(tripDTO.getToDate());
+				jtrip.setTripId(tripId);
+				tripRepository.save(jtrip);
+
+				status.setStatus(true);
+				status.setMessage("Trip Added Successfully..");
+			}
+
+		} else {
+
+			JollyTrip jtrip = new JollyTrip();
+			jtrip.setLocation(locationRepository
+					.findByLocationNameIgnoreCaseOrderByLocationIdDesc(tripDTO.getLocationName()).get());
+			jtrip.setFromDate(tripDTO.getFromDate());
+			jtrip.setToDate(tripDTO.getToDate());
+			tripRepository.save(jtrip);
+
+			status.setStatus(true);
+			status.setMessage("Trip Added Successfully..");
+
+		}
+
+		return status;
+	}
+
+	public JollyTripDTO deleteTrip(JollyTripDTO tripDTO) throws Exception {
+
+		List<JollyTrip> trip = tripRepository.findByTripWithLocation(tripDTO.getFromDate(), tripDTO.getToDate(),
+				tripDTO.getLocationName());
+		JollyTripDTO status = new JollyTripDTO();
+		if (trip.size() != 0) {
+
+			JollyTrip t = trip.get(0);
+			t.setDisabled(true);
+			tripRepository.save(t);
+
+			status.setStatus(true);
+			status.setMessage("Trip Deleted Successfully..");
+
+		} else {
+
+			status.setStatus(false);
+			status.setMessage("Trip Deletion Failed..");
+		}
+
+		return status;
+	}
+
+	public JollyCustomerDTO addCustomer(JollyCustomerDTO customerDTO) throws Exception {
+
+		Optional<JollyUser> customers = userRepository.findByCustomerMobile(customerDTO.getMobile());
+		JollyCustomerDTO status = new JollyCustomerDTO();
+		if (customers.isPresent()) {
+
+			if (!customers.get().getIsDisabled()) {
+				status.setStatus(false);
+				status.setMessage("Customer already exists..");
+			} else {
+				Long userId = customers.get().getUserId();
+				JollyUser user = new JollyUser(customerDTO);
+				user.setUserId(userId);
+				user.setRole(roleRepository.findByRoleName("Customer").get());
+				userRepository.save(user);
+				status.setStatus(true);
+				status.setMessage("Customer Added Successfully..");
+			}
+
+		} else {
+//			JollyCustomer customer = new JollyCustomer(customerDTO);
+//
+//			customerRepository.save(customer);
+
+			JollyUser user = new JollyUser(customerDTO);
+			user.setRole(roleRepository.findByRoleName("Customer").get());
+			userRepository.save(user);
+
+			status.setStatus(true);
+			status.setMessage("Customer Added Successfully..");
+		}
+
+		return status;
+	}
+
+	public List<JollyCalendarDTO> getSchedules() {
+		return scheduleRepository.getSchedules();
+	}
+	public String getUserName() {
+		UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return userDetails.getUsername();
+	}
+
+	public JollyScheduleDTO addSchedule(JollyScheduleDTO scheduleDTO) throws Exception {
+
+		System.out.println(scheduleDTO.getTripDates());
+
+		final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		final LocalDate fromDate = LocalDate.parse(scheduleDTO.getTripDates().split("to")[0].trim(), dtf);
+		final LocalDate toDate = LocalDate.parse(scheduleDTO.getTripDates().split("to")[1].trim(), dtf);
+
+		JollyTrip trip = tripRepository.findByTrip(fromDate, toDate).stream()
+				.filter(o -> o.getLocation().getLocationName().equals(scheduleDTO.getLocationName()))
+				.collect(Collectors.toList()).get(0);
+
+		JollyScheduleDTO status = new JollyScheduleDTO();
+
+		JollyUser user = userRepository.findByMobile(scheduleDTO.getMobile()).get();
+
+		Optional<JollySchedule> schedule = scheduleRepository.findByTripAndUser(trip, user);
+
+		if (schedule.isPresent()) {
+			status.setStatus(false);
+			status.setMessage("Customer is not available for the Trip");
+		} else {
+			JollySchedule newSchedule = new JollySchedule();
+			newSchedule.setUser(user);
+			newSchedule.setTrip(trip);
+			scheduleRepository.save(newSchedule);
+			status.setStatus(true);
+			status.setMessage("Customer added to Trip Successfully");
+		}
+
+		return status;
+	}
+
+	public JollyCustomerDTO editCustomer(JollyCustomerDTO customerDTO) throws Exception {
+
+		Optional<JollyUser> customers = userRepository.findByCustomerMobile(customerDTO.getOldMobile());
+
+		JollyCustomerDTO status = new JollyCustomerDTO();
+		if (customers.isPresent()) {
+
+			JollyUser customer = customers.get();
+
+			customer.setEmail(customerDTO.getEmailId());
+			customer.setMobile(customerDTO.getMobile());
+			customer.setName(customerDTO.getName());
+			userRepository.save(customer);
+
+			status.setStatus(true);
+			status.setMessage("Customer Details Edited Successfully..");
+
+		} else {
+
+			status.setStatus(false);
+			status.setMessage("Customer Details Edit Failed..");
+		}
+
+		return status;
+	}
+
+	public JollyCustomerDTO deleteCustomer(JollyCustomerDTO customerDTO) throws Exception {
+
+		Optional<JollyUser> customers = userRepository.findByCustomerMobile(customerDTO.getMobile());
+		JollyCustomerDTO status = new JollyCustomerDTO();
+		if (customers.isPresent()) {
+
+			JollyUser customer = customers.get();
+			customer.setIsDisabled(true);
+
+			userRepository.save(customer);
+			status.setStatus(true);
+			status.setMessage("Customer Deleted Successfully..");
+
+		} else {
+
+			status.setStatus(false);
+			status.setMessage("Customer Delete Failed..");
+		}
+
+		return status;
+	}
+
+	public JollyLocationDTO addLocation(JollyLocationDTO locationDTO) throws Exception {
+
+		Optional<JollyLocation> location = locationRepository
+				.findByLocationNameIgnoreCaseOrderByLocationIdDesc(locationDTO.getLocationName());
+		JollyLocationDTO status = new JollyLocationDTO();
+		if (location.isPresent()) {
+
+			if (!location.get().getDisabled()) {
+				status.setStatus(false);
+				status.setMessage("Location already exists..");
+			} else {
+				Long locationId = location.get().getLocationId();
+				JollyLocation jlocation = new JollyLocation();
+				jlocation.setLocationName(locationDTO.getLocationName());
+				jlocation.setPrice(locationDTO.getPrice());
+				jlocation.setLocationId(locationId);
+				locationRepository.save(jlocation);
+
+				System.out.println("asdfadsfadsf");
+
+				status.setStatus(true);
+				status.setMessage("Location (" + locationDTO.getLocationName() + " , " + locationDTO.getPrice()
+						+ ") Added Successfully..");
+			}
+
+		} else {
+
+			JollyLocation jlocation = new JollyLocation();
+			jlocation.setLocationName(locationDTO.getLocationName());
+			jlocation.setPrice(locationDTO.getPrice());
+			locationRepository.save(jlocation);
+
+			status.setStatus(true);
+			status.setMessage("Location (" + locationDTO.getLocationName() + " , " + locationDTO.getPrice()
+					+ ") Added Successfully..");
+
+		}
+
+		return status;
+
+	}
+
+	public JollyLocationDTO editLocation(JollyLocationDTO locationDTO) throws Exception {
+
+		Optional<JollyLocation> location = locationRepository
+				.findByLocationNameIgnoreCaseOrderByLocationIdDesc(locationDTO.getOldLocationName());
+		JollyLocationDTO status = new JollyLocationDTO();
+		if (location.isPresent()) {
+
+			JollyLocation jlocation = location.get();
+			jlocation.setLocationName(locationDTO.getLocationName());
+			jlocation.setPrice(locationDTO.getPrice());
+			locationRepository.save(jlocation);
+
+			status.setStatus(true);
+			status.setMessage("Location (" + locationDTO.getLocationName() + " , " + locationDTO.getPrice()
+					+ ") Edited Successfully..");
+
+		} else {
+
+			status.setStatus(false);
+			status.setMessage("Location does not exists..");
+
+		}
+
+		return status;
+
+	}
+
+	public List<JollyLocationDTO> getLocations() throws Exception {
+
+		return locationRepository.findAll().stream().filter(o -> !o.getDisabled())
+				.sorted(Comparator.comparingDouble(JollyLocation::getLocationId).reversed())
+				.map(o -> new JollyLocationDTO(o)).collect(Collectors.toList());
+
+	}
+
+	public List<JollyCustomerDTO> getCustomers() throws Exception {
+
+		return userRepository.findAll().stream()
+				.filter(o -> o.getRole().getRoleName().equals("Customer") && !o.getIsDisabled() && !o.getIsDeleted())
+				.sorted(Comparator.comparingDouble(JollyUser::getUserId).reversed()).map(o -> new JollyCustomerDTO(o))
+				.collect(Collectors.toList());
+
+	}
+
+	public List<JollyTripDTO> getTrips() throws Exception {
+
+		return tripRepository.findAll().stream().filter(o -> !o.getDisabled() && !o.getLocation().getDisabled())
+				.sorted(Comparator.comparingDouble(JollyTrip::getTripId).reversed()).map(o -> new JollyTripDTO(o))
+				.collect(Collectors.toList());
+
+	}
+
+	public Boolean deleteLocation(String locationName) throws Exception {
+
+		Boolean status = false;
+
+		Optional<JollyLocation> location = locationRepository
+				.findByLocationNameIgnoreCaseOrderByLocationIdDesc(locationName);
+
+		if (location.isPresent()) {
+
+			JollyLocation loc = location.get();
+			loc.setDisabled(true);
+			locationRepository.save(loc);
+			status = true;
+		}
+
+		return status;
+
+	}
+
+	public List<DropDown> getLocationDropDown() throws Exception {
+		return getLocations().stream().map(o -> new DropDown(o.getLocationName(), o.getLocationName()))
+				.collect(Collectors.toList());
+	}
+
+	public List<DropDown> getCustomersDropDown() throws Exception {
+		return getCustomers().stream()
+				.map(o -> new DropDown(o.getName() + " - " + o.getMobile(), o.getName() + " - " + o.getMobile()))
+				.collect(Collectors.toList());
+	}
+
 	public JollyLoginStatusDTO getLoginDetails() throws Exception {
 
 		JollyLoginStatusDTO loginStatus = new JollyLoginStatusDTO();
@@ -82,23 +423,22 @@ public class JollyServiceClass {
 			UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
 					.getPrincipal();
 
-			JollyUser user=userRepository.findByMobile(userDetails.getUsername()).get();
-			
+			JollyUser user = userRepository.findByMobile(userDetails.getUsername()).get();
+
 			loginStatus.setUserId(userDetails.getUsername());
-			
+
 			loginStatus.setName(user.getName());
-			
+
 			loginStatus.setEmail(user.getEmail());
-			
+
 			loginStatus.setMobile(user.getMobile());
-		
+
 			loginStatus.setLoginStatus(true);
 
 			System.out.println(Long.valueOf(userDetails.getUsername()));
 
 			loginStatus.setUserType(userDetails.getAuthorities().toArray()[0].toString());
 		}
-		
 
 		return loginStatus;
 	}
@@ -137,10 +477,10 @@ public class JollyServiceClass {
 		msg.setSubject(subject);
 		msg.setText(text);
 		try {
-			 JavaMailSenderImpl jMailSender = (JavaMailSenderImpl)javaMailSender;
+			JavaMailSenderImpl jMailSender = (JavaMailSenderImpl) javaMailSender;
 
-		     jMailSender.setUsername("heidigiotp@gmail.com");
-		     jMailSender.setPassword(password);
+			jMailSender.setUsername("heidigiotp@gmail.com");
+			jMailSender.setPassword(password);
 			javaMailSender.send(msg);
 		} catch (Exception ex) {
 			try {
@@ -239,7 +579,7 @@ public class JollyServiceClass {
 			String otp = generateOTP(4);
 			user.setPassword(otp);
 			user.setMessage("User Signup");
-			user.setRole(roleRepository.findByRoleName("User").get());
+			user.setRole(roleRepository.findByRoleName("Customer").get());
 			user.setJoinDate(Timestamp.valueOf(LocalDateTime.now()));
 			user.setIsDeleted(false);
 			user.setIsDisabled(true);
@@ -263,6 +603,33 @@ public class JollyServiceClass {
 
 		return loginStatus;
 
+	}
+
+	public Boolean removeFromTrip(String locationName, String trip, String customer) {
+
+		try {
+
+			final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			final LocalDate fromDate = LocalDate.parse(trip.split("to")[0].trim(), dtf);
+			final LocalDate toDate = LocalDate.parse(trip.split("to")[1].trim(), dtf);
+
+			JollyTrip jtrip = tripRepository.findByTrip(fromDate, toDate).stream()
+					.filter(o -> o.getLocation().getLocationName().equals(locationName)).collect(Collectors.toList())
+					.get(0);
+
+			JollyUser user = userRepository.findById(Long.valueOf(customer.split("-")[0].trim())).get();
+
+			JollySchedule schedule = scheduleRepository.findByTripAndUser(jtrip, user).get();
+
+			scheduleRepository.delete(schedule);
+
+			// TODO Auto-generated method stub
+			return true;
+		} catch (Exception ex) {
+
+			ex.printStackTrace();
+			return false;
+		}
 	}
 
 }

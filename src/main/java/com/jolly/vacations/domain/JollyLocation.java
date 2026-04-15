@@ -12,25 +12,20 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "jollyroles")
-public class JollyRole implements Serializable {
+@Table(name = "jollylocation")
+public class JollyLocation implements Serializable {
 
 	/**
 	 * 
 	 */
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6894624995078726090L;
-	/**
-	 * 
-	 */
+	private static final long serialVersionUID = 3760113683143736416L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	Long roleId;
-	String roleName = "";
-	String displayName = "";
+	Long locationId;
+	String locationName = "";
+	Double price = 0d;
+
+	Boolean disabled = false;
 
 }
