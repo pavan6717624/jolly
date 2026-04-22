@@ -1,4 +1,4 @@
-package com.jolly.mytradingsetup.model;
+package com.jolly.vacations.model;
 
 import java.util.Comparator;
 import java.util.List;

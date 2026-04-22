@@ -1,10 +1,9 @@
-package com.jolly.mytradingsetup.controller;
+package com.jolly.vacations.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import com.jolly.mytradingsetup.model.ZData;
-import com.jolly.mytradingsetup.model.ZOIData;
+import com.jolly.vacations.model.ZData;
+import com.jolly.vacations.model.ZOIData;
 
 @RestController
 @CrossOrigin(origins = "*")
