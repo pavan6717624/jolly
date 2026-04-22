@@ -63,7 +63,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/image/*").permitAll().antMatchers("/images/*").permitAll().antMatchers("/video/*")
 				.permitAll().antMatchers("/verifyOTP").permitAll().antMatchers("/generateOTP").permitAll()
 				.antMatchers("/facebookLogin").permitAll().antMatchers("/facebookSignup").permitAll()
-				.antMatchers("/getCategories").permitAll().antMatchers("/MYTRADE/**").permitAll()
+				.antMatchers("/getCategories").permitAll().antMatchers("/ZERODHA/**").permitAll()
 
 				// all other requests need to be authenticated
 				.anyRequest().authenticated().and().
