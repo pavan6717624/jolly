@@ -32,9 +32,9 @@ public class ZerodhaController {
 	static HttpHeaders headers = new HttpHeaders();
 	static HttpEntity<String> entity = null;
 	static List<String> instruments = null;
-	static String token="WDuWeNujkyZq3tfmqeqZZOrZyV4vX57io7PJWxT18TN+a1Ei6GnteLq8CUoiaDWS1Wd5BcrpUt1ERmQPzyoG6aH3oQg5fC2BoZ8x1IWMA0qAzixJ+mSzFA==";
-	static String today="2026-05-05";
-	static String expiryDate="2026-05-05";
+	static String token="Ca2iM0jgEMo36sc0D1Ztb4YDYNSY8SUj3m0Kdox77bpjmE7B0RtzdjuO/wN78rqNF2sWkJaU24eUxUhIFKMRybJubvtJYjR5Cd2pq/grwhex2nnBa4q2Xg==";
+	static String today="2026-05-06";
+	static String expiryDate="2026-05-12";
 	static String stock="\"NIFTY\"";
 	static int range=100;
 	{
@@ -76,7 +76,7 @@ public class ZerodhaController {
 		{
 			range=50;
 			stock="NIFTY";
-			expiryDate="2026-05-05";
+			expiryDate="2026-05-12";
 			System.out.println("range is "+range);
 		}
 		else if(instrument.equals("265"))
