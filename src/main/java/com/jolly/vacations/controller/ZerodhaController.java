@@ -306,12 +306,12 @@ public class ZerodhaController {
 		List<Long> prices = new ArrayList<>();
 		List<String> data = new ArrayList<>();
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 8; i++) {
 			Long p = price - i * range;
 			prices.add(p);
 		}
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 8; i++) {
 			Long p = price + i * range;
 			prices.add(p);
 		}
