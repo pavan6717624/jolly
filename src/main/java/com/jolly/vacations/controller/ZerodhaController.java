@@ -32,8 +32,8 @@ public class ZerodhaController {
 	static HttpHeaders headers = new HttpHeaders();
 	static HttpEntity<String> entity = null;
 	static List<String> instruments = null;
-	static String token="BiWMTuvsoD2gKO7xaTrMOK98vtwgQHc3Ao/qyUSuSjTIaDGBNOK8IFHWIpPeDEhHP6zINZ6AKRC86e/BnsJfIoL62J3b6eqkc8bm7uqvDOw5uJI0FvYDSw==";
-	static String today="2026-05-07";
+	static String token="SE/VAbuIeJW5WCjc/w7DiGOft1UGWwLgUi9UeypZ/uwFQtIC/nmSxrykB3qH20BlKs18SPI36htL6b4+Gp3CLbB/vnZ9ki+/aRCOFlOvAYiN9k4PZJ+nQA==";
+	static String today="2026-05-11";
 	static String expiryDate="2026-05-12";
 	static String stock="\"NIFTY\"";
 	static int range=100;
