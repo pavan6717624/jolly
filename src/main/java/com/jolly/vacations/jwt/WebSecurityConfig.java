@@ -60,6 +60,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				// dont authenticate this particular request
 				.authorizeRequests().antMatchers("/login").permitAll().antMatchers("/signup").permitAll()
 				.antMatchers("/sendOTP").permitAll()
+				.antMatchers("/getToken").permitAll()
 				.antMatchers("/image/*").permitAll().antMatchers("/images/*").permitAll().antMatchers("/video/*")
 				.permitAll().antMatchers("/verifyOTP").permitAll().antMatchers("/generateOTP").permitAll()
 				.antMatchers("/facebookLogin").permitAll().antMatchers("/facebookSignup").permitAll()

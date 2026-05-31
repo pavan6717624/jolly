@@ -1,10 +1,30 @@
 package com.jolly.vacations.controller;
 
+import java.net.*;
+import java.util.*;
+import java.sql.*;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import javax.annotation.PostConstruct;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,23 +47,164 @@ public class ZerodhaController {
 		return "demo";
 
 	}
+	
+	
+	@Value("${zerodha.password}")
+	private String password;
+    
+	@Value("${zerodha.user}")
+	private String user;
+    
+	@Value("${zerodha.token}")
+	private String token;
+    
+	@Value("${zerodha.today}")
+	private String today;
+    
+	@Value("${zerodha.expiryDate}")
+	private String expiryDate;
+	
+	static HttpURLConnection con=null;
 
 	static RestTemplate template = new RestTemplate();
-	static HttpHeaders headers = new HttpHeaders();
-	static HttpEntity<String> entity = null;
-	static List<String> instruments = null;
-	static String token="WDuWeNujkyZq3tfmqeqZZOrZyV4vX57io7PJWxT18TN+a1Ei6GnteLq8CUoiaDWS1Wd5BcrpUt1ERmQPzyoG6aH3oQg5fC2BoZ8x1IWMA0qAzixJ+mSzFA==";
-	static String today="2026-05-05";
-	static String expiryDate="2026-05-05";
+	private HttpHeaders headers = new HttpHeaders();
+	private HttpEntity<String> entity = null;
+	private List<String> instruments = null;
+
 	static String stock="\"NIFTY\"";
 	static int range=100;
-	{
+	@PostConstruct
+	public void init() {
+		System.out.println("Details are :: "+token+"\n"+today+"\n"+expiryDate);
 		headers.set("Authorization","enctoken "+token);
 		headers.set("User-Agent",
 				"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
 		entity = new HttpEntity<String>(headers);
 		instruments = getInstruments();
 	}
+	
+	 private static String extractCookieValue(Map<String, List<String>> headers, String name) {
+		    if (headers == null) return null;
+		    for (Map.Entry<String, List<String>> e : headers.entrySet()) {
+		        if (e.getKey() == null) continue;
+		        if (!e.getKey().equalsIgnoreCase("Set-Cookie")) continue;
+		        for (String headerVal : e.getValue()) {
+		            for (String part : headerVal.split(";")) {
+		                part = part.trim();
+		                if (part.startsWith(name + "=")) {
+		                    return part.substring((name + "=").length());
+		                }
+		            }
+		        }
+		    }
+		    return null;
+		}
+	
+	@RequestMapping(value = "getToken")
+	public String getTokenDetails(@RequestParam("code") String code) throws Exception
+	{
+		 String baseUrl = "https://kite.zerodha.com/api/login";
+		 String postParams = buildPostParams(user, password);
+	        String response = postForm(baseUrl, postParams);
+	        System.out.println("Final response:\n" + response);
+	        
+	        // extract request_id
+	        String requestId = null;
+	        try {
+	            JSONObject jsonResponse = new JSONObject(response);
+	            if (jsonResponse.has("data")) {
+	                requestId = jsonResponse.getJSONObject("data").optString("request_id", null);
+	            }
+	            System.out.println("Extracted request_id: " + requestId);
+	        } catch (Exception e) {
+	            System.out.println("Failed to parse JSON response: " + e.getMessage());
+	        }
+
+	        // prompt user for 2FA code
+	    
+
+	        baseUrl = "https://kite.zerodha.com/api/twofa";
+	        try {
+	            String twofaPostParams = "user_id=" + java.net.URLEncoder.encode("IO7052", "UTF-8")
+	                    + "&request_id=" + java.net.URLEncoder.encode(requestId == null ? "" : requestId, "UTF-8")
+	                    + "&twofa_type=app_code"
+	                    + "&twofa_value=" + java.net.URLEncoder.encode(code, "UTF-8");
+	            String twofaResponse = postForm(baseUrl, twofaPostParams);
+	            System.out.println("TwoFA response:\n" + twofaResponse);
+	        } catch (Exception e) {
+	            System.out.println("Failed to send twofa request: " + e.getMessage());
+	        }
+	        
+	        String enctoken = extractCookieValue(con.getHeaderFields(), "enctoken");
+	        System.out.println("enctoken: " + enctoken);
+	        
+		return enctoken;
+	}
+	
+	  private static String buildPostParams(String userId, String password) {
+	        try {
+	            return "user_id=" + java.net.URLEncoder.encode(userId, "UTF-8")
+	                    + "&password=" + java.net.URLEncoder.encode(password, "UTF-8")
+	                    + "&type=phone";
+	        } catch (Exception e) {
+	            // fallback (shouldn't happen)
+	            return "user_id=" + userId + "&password=" + password + "&type=phone";
+	        }
+	    }
+	  
+	  private static String postForm(String baseUrl, String postParams) throws IOException {
+	        URL url = new URL(baseUrl);
+	        con = (HttpURLConnection) url.openConnection();
+	        con.setConnectTimeout(CONNECT_TIMEOUT);
+	        con.setReadTimeout(READ_TIMEOUT);
+	        con.setDoOutput(true);
+	        con.setRequestMethod("POST");
+	        con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+	        con.setRequestProperty("Accept", "application/json, text/plain, */*");
+	        con.setRequestProperty("Accept-Encoding", "gzip, deflate");
+	        con.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+
+	        byte[] out = postParams.getBytes(StandardCharsets.UTF_8);
+	        con.setRequestProperty("Content-Length", String.valueOf(out.length));
+
+	        try (OutputStream os = con.getOutputStream()) {
+	            os.write(out);
+	        }
+
+	        int status = con.getResponseCode();
+	        System.out.println("HTTP Response Code: " + status);
+
+	        // print key headers for debugging
+	        for (Map.Entry<String, List<String>> e : con.getHeaderFields().entrySet()) {
+	            System.out.println(e.getKey() + ": " + e.getValue());
+	        }
+
+	        InputStream responseStream = status >= 400 ? con.getErrorStream() : con.getInputStream();
+	        if (responseStream == null) {
+	            con.disconnect();
+	            return "";
+	        }
+
+	        String contentEncoding = con.getHeaderField("Content-Encoding");
+	        if (contentEncoding != null) contentEncoding = contentEncoding.toLowerCase();
+	        if ("gzip".equals(contentEncoding)) {
+	            responseStream = new GZIPInputStream(responseStream);
+	        } else if ("deflate".equals(contentEncoding)) {
+	            responseStream = new InflaterInputStream(responseStream);
+	        }
+
+	        StringBuilder sb = new StringBuilder();
+	        try (BufferedReader br = new BufferedReader(new InputStreamReader(responseStream, StandardCharsets.UTF_8))) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
+	                sb.append(line).append('\n');
+	            }
+	        } finally {
+	            con.disconnect();
+	        }
+
+	        return sb.toString();
+	    }
 	
 	
 
@@ -58,6 +219,8 @@ public class ZerodhaController {
 		return instruments;
 	}
 
+	
+	
 	@RequestMapping(value = "getData")
 	public List<ZOIData> getData(@RequestParam("instrument") String instrument) {
 		String call[] = { "CE", "PE" };
@@ -76,7 +239,7 @@ public class ZerodhaController {
 		{
 			range=50;
 			stock="NIFTY";
-			expiryDate="2026-05-05";
+			expiryDate="2026-06-02";
 			System.out.println("range is "+range);
 		}
 		else if(instrument.equals("265"))
@@ -232,6 +395,13 @@ public class ZerodhaController {
 
 		return OIDataList;
 	}
+	
+	
+
+    private static final int CONNECT_TIMEOUT = 15_000;
+    private static final int READ_TIMEOUT = 15_000;
+	
+	
 
 	@RequestMapping(value = "getStockData")
 	public ZOIData getStockData(@RequestParam("instrument") String instrument) {
