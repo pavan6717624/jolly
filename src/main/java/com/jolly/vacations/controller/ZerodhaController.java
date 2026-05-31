@@ -239,7 +239,9 @@ public class ZerodhaController {
 		{
 			range=50;
 			stock="NIFTY";
+
 			expiryDate="2026-06-02";
+
 			System.out.println("range is "+range);
 		}
 		else if(instrument.equals("265"))
@@ -476,12 +478,12 @@ public class ZerodhaController {
 		List<Long> prices = new ArrayList<>();
 		List<String> data = new ArrayList<>();
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 8; i++) {
 			Long p = price - i * range;
 			prices.add(p);
 		}
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 8; i++) {
 			Long p = price + i * range;
 			prices.add(p);
 		}
