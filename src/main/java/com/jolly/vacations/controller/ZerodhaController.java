@@ -240,7 +240,7 @@ public class ZerodhaController {
 			range=50;
 			stock="NIFTY";
 
-			expiryDate="2026-06-02";
+//			expiryDate="2026-06-02";
 
 			System.out.println("range is "+range);
 		}
@@ -283,6 +283,7 @@ public class ZerodhaController {
 			for (int k = 0; k < 2; k++) {
 
 				ZOIData oiData = new ZOIData();
+				oiData.setLastPrice(lastPrice);
 				oiData.setPrice(Long.valueOf(spiltData[0]));
 				oiData.setInstrument(Long.valueOf(spiltData[1 + k]));
 				oiData.setCall(call[k]);

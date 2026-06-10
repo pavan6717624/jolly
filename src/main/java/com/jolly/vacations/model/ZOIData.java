@@ -14,5 +14,7 @@ public class ZOIData {
 	List<Double> close, open, high, low, oi, vol;
 	List<String> date;
 	
+	Double lastPrice;
+	
 	
 }
