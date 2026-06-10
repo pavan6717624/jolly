@@ -240,7 +240,11 @@ public class ZerodhaController {
 			range=50;
 			stock="NIFTY";
 
+<<<<<<< HEAD
 //			expiryDate="2026-06-02";
+=======
+			// expiryDate="2026-06-02";
+>>>>>>> 28a242154201d8d8a88c088da20adc3742be5623
 
 			System.out.println("range is "+range);
 		}
