@@ -10,6 +10,8 @@ public class JollyLoginStatusDTO {
 	Boolean loginStatus = false;
 	String jwt = "";
 	String loginId = "0";
+	
+	Double amount=0d;
 
 	String message = "";
 

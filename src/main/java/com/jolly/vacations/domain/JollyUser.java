@@ -47,6 +47,7 @@ public class JollyUser implements Serializable {
 	String mobile = "";
 	String email = "";
 	String message = "";
+	Double amount=0d;
 
 	String type = "";
 

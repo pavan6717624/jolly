@@ -432,6 +432,8 @@ public class JollyServiceClass {
 			loginStatus.setEmail(user.getEmail());
 
 			loginStatus.setMobile(user.getMobile());
+			
+			loginStatus.setAmount(user.getAmount());
 
 			loginStatus.setLoginStatus(true);
 
