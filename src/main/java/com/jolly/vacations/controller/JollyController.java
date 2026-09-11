@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jolly.vacations.model.DistributeRewardsDTO;
 import com.jolly.vacations.model.DropDown;
 import com.jolly.vacations.model.JollyCalendarDTO;
 import com.jolly.vacations.model.JollyCustomerDTO;
@@ -154,8 +155,16 @@ public class JollyController {
 
 	@RequestMapping(value = "/getCustomers")
 	public List<JollyCustomerDTO> getCustomers() throws Exception {
-		return service.getCustomers();
+		List<JollyCustomerDTO> dto= service.getCustomers();
+		System.out.println(dto);
+		return dto;
 
+	}
+
+	@RequestMapping(value = "/distributeRewards")
+	public JollyCustomerDTO distributeRewards(@RequestBody DistributeRewardsDTO payload) throws Exception {
+		System.out.println("distributeRewards payload :: "+payload);
+		return service.distributeRewards(payload);
 	}
 
 	@RequestMapping(value = "/getCustomersDropDown")

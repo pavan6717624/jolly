@@ -10,6 +10,7 @@ public class JollyCustomerDTO {
 	String name, mobile, emailId;
 	String oldMobile;
 	Boolean status;
+	Double amount;
 	String message;
 
 	public JollyCustomerDTO() {
@@ -21,8 +22,10 @@ public class JollyCustomerDTO {
 		this.name = customer.getName();
 		this.mobile = customer.getMobile();
 		this.emailId = customer.getEmail();
-
+		this.amount=customer.getAmount();
 		this.status = true;
 		this.message = "Success";
 	}
+
+	
 }

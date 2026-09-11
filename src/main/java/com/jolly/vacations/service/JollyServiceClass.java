@@ -29,6 +29,7 @@ import com.jolly.vacations.domain.JollySchedule;
 import com.jolly.vacations.domain.JollyTrip;
 import com.jolly.vacations.domain.JollyUser;
 import com.jolly.vacations.jwt.JwtTokenUtil;
+import com.jolly.vacations.model.DistributeRewardsDTO;
 import com.jolly.vacations.model.DropDown;
 import com.jolly.vacations.model.JollyCalendarDTO;
 import com.jolly.vacations.model.JollyCustomerDTO;
@@ -233,6 +234,63 @@ public class JollyServiceClass {
 			status.setMessage("Customer added to Trip Successfully");
 		}
 
+		return status;
+	}
+
+	public JollyCustomerDTO distributeRewards(DistributeRewardsDTO payload) throws Exception {
+		JollyCustomerDTO status = new JollyCustomerDTO();
+		if (payload == null) {
+			status.setStatus(false);
+			status.setMessage("No payload received for reward distribution");
+			return status;
+		}
+
+		List<String> payloadMobiles = payload.getCustomerMobiles();
+		if (payloadMobiles == null || payloadMobiles.isEmpty()) {
+			if (payload.getCustomers() != null && !payload.getCustomers().isEmpty()) {
+				payloadMobiles = payload.getCustomers().stream()
+						.map(JollyCustomerDTO::getMobile)
+						.filter(mobile -> mobile != null && !mobile.trim().isEmpty())
+						.distinct()
+						.collect(Collectors.toList());
+			} else if (payload.getCustomerEmails() != null && !payload.getCustomerEmails().isEmpty()) {
+				payloadMobiles = payload.getCustomerEmails();
+			}
+		}
+
+		System.out.println("Distributing rewards to customers: " + payloadMobiles);
+		if (payloadMobiles == null || payloadMobiles.isEmpty()) {
+			status.setStatus(false);
+			status.setMessage("No customers selected for reward distribution");
+			return status;
+		}
+
+		double perCustomerAmount = payload.getPerCustomer() == null ? 0d : payload.getPerCustomer();
+		List<String> uniqueMobiles = payloadMobiles.stream()
+				.filter(mobile -> mobile != null && !mobile.trim().isEmpty())
+				.map(mobile -> mobile.trim())
+				.distinct()
+				.collect(Collectors.toList());
+
+		int updatedCount = 0;
+		for (String mobile : uniqueMobiles) {
+			Optional<JollyUser> customer = userRepository.findByMobile(mobile);
+			if (customer.isPresent()) {
+				JollyUser user = customer.get();
+				user.setAmount((user.getAmount() == null ? 0d : user.getAmount()) + perCustomerAmount);
+				userRepository.save(user);
+				updatedCount++;
+			}
+		}
+
+		if (updatedCount == 0) {
+			status.setStatus(false);
+			status.setMessage("No matching customer found for the provided mobile numbers");
+			return status;
+		}
+
+		status.setStatus(true);
+		status.setMessage("Rewards distributed successfully to " + updatedCount + " customers");
 		return status;
 	}
 
